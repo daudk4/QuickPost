@@ -21,8 +21,10 @@ server.get("/signin", (req, res) => {
   res.render("signin");
 });
 
-server.get("/dashboard", isLoggedIn, (req, res) => {
-  res.send(req.user);
+server.get("/dashboard", isLoggedIn, async (req, res) => {
+  const { email, userId } = req.user;
+  const user = await userModel.findOne({ _id: userId });
+  res.render("dashboard", { user: user });
 });
 
 server.post("/signin", async (req, res) => {
@@ -34,11 +36,10 @@ server.post("/signin", async (req, res) => {
   const isValidPassword = await bcrypt.compare(password, user.password);
   if (!isValidPassword) return res.status(500).send("Invalid Credentials");
 
-//   res.status(200).send("you can login");
   const token = jwt.sign({ email, userId: user._id }, "secretKey");
-    res.cookie("token", token);
-    res.redirect('/dashboard')
-
+  res.cookie("token", token);
+  res.redirect("/dashboard");
+  //   res.status(200).send("you can login");
 });
 
 server.post("/signup", async (req, res) => {
@@ -64,14 +65,19 @@ server.post("/signup", async (req, res) => {
   });
 });
 
+server.get("/logout", (req, res) => {
+  res.cookie("token", null);
+  res.redirect("/signin");
+});
+
 //middleware function:
 function isLoggedIn(req, res, next) {
   if (!req.cookies.token) res.send("You must be logged in");
   else {
     const data = jwt.verify(req.cookies.token, "secretKey");
     req.user = data;
+    next();
   }
-  next();
 }
 
 server.listen(3000, () => {
