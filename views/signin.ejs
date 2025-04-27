@@ -3,22 +3,125 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Sign In</title>
     <link rel="stylesheet" href="/stylesheets/style.css" />
     <script src="/javascripts/script.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script>
+      function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eye-icon');
+        
+        if (passwordInput.type === 'password') {
+          passwordInput.type = 'text';
+          eyeIcon.classList.remove('fa-eye');
+          eyeIcon.classList.add('fa-eye-slash');
+        } else {
+          passwordInput.type = 'password';
+          eyeIcon.classList.remove('fa-eye-slash');
+          eyeIcon.classList.add('fa-eye');
+        }
+      }
+      
+      document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('signin-form');
+        const inputs = form.querySelectorAll('input');
+        
+        inputs.forEach(input => {
+          input.addEventListener('focus', function() {
+            this.parentElement.classList.add('border-blue-400');
+          });
+          
+          input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('border-blue-400');
+            
+            // Basic validation
+            if (this.value.trim() === '') {
+              this.parentElement.classList.add('border-red-400');
+              const errorMsg = this.parentElement.nextElementSibling;
+              if (errorMsg && errorMsg.classList.contains('error-message')) {
+                errorMsg.classList.remove('hidden');
+              }
+            } else {
+              this.parentElement.classList.remove('border-red-400');
+              const errorMsg = this.parentElement.nextElementSibling;
+              if (errorMsg && errorMsg.classList.contains('error-message')) {
+                errorMsg.classList.add('hidden');
+              }
+            }
+          });
+        });
+      });
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   </head>
-  <body>
-    <div class="w-full h-full p-10 bg-zinc-900 text-white">
-      <div class="w-4/5 flex justify-between items-center mb-4">
-       <h1 class="text-2xl tracking-tighter">Sign in to your account</h1>
-       <a href="/" class="inline-block px-8 py-3 border-2 border-transparent text-blue-500 underline rounded-lg" >Sign up</a>
+  <body class="bg-zinc-900 text-white min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md p-5 bg-zinc-800 rounded-lg shadow-lg">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold tracking-tight">Sign in</h1>
+    
       </div>
-      <form action="/signin" method="post">
-        <input class="px-2 py-3 border-2 border-zinc-600 outline-none rounded-lg " type="email" placeholder="email" name="email" />
-        <input class="px-2 py-3 border-2 border-zinc-600 outline-none rounded-lg " type="password" placeholder="password" name="password" />
-        <button class="px-6 py-2 border-2 border-transparent bg-blue-500 rounded-lg" type="submit">Sign in</button>
+      
+      <form id="signin-form" action="/signin" method="post" class="space-y-4">
+        <div>
+          <label for="email" class="text-xs font-medium text-zinc-300">Email Address</label>
+          <div class="relative border border-zinc-600 rounded-lg focus-within:border-blue-400 transition-colors">
+            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+              <i class="fas fa-envelope text-zinc-500 text-xs"></i>
+            </div>
+            <input id="email" class="w-full bg-transparent px-7 py-2 outline-none rounded-lg text-sm" type="email" placeholder="your.email@example.com" name="email" required />
+          </div>
+          <p class="error-message text-red-400 text-xs mt-0.5 hidden">Email is required</p>
+        </div>
+        
+        <div>
+          <div class="flex justify-between">
+            <label for="password" class="text-xs font-medium text-zinc-300">Password</label>
+            <a aria-disabled="true" class="text-xs text-blue-400 hover:underline cursor-not-allowed">Forgot password?</a>
+          </div>
+          <div class="relative border border-zinc-600 rounded-lg focus-within:border-blue-400 transition-colors">
+            <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+              <i class="fas fa-lock text-zinc-500 text-xs"></i>
+            </div>
+            <input id="password" class="w-full bg-transparent px-7 py-2 pr-8 outline-none rounded-lg text-sm" type="password" placeholder="Enter your password" name="password" required />
+            <div class="absolute inset-y-0 right-0 pr-2 flex items-center">
+              <button type="button" onclick="togglePasswordVisibility()" class="text-zinc-500 hover:text-zinc-300 focus:outline-none">
+                <i id="eye-icon" class="fas fa-eye text-xs"></i>
+              </button>
+            </div>
+          </div>
+          <p class="error-message text-red-400 text-xs mt-0.5 hidden">Password is required</p>
+        </div>
+        
+        <!-- <div class="flex items-center">
+          <input id="remember" name="remember" type="checkbox" class="h-3 w-3 rounded border-zinc-600 text-blue-500 focus:ring-blue-400" />
+          <label for="remember" class="ml-2 text-xs text-zinc-300">
+            Remember me for 30 days
+          </label>
+        </div>
+         -->
+        <button class="cursor-pointer w-full py-2 px-4 bg-blue-600 hover:bg-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-white font-medium rounded-lg transition-all duration-150 flex items-center justify-center text-sm mt-6" type="submit">
+          Sign in
+          <i class="fas fa-arrow-right ml-2 text-xs"></i>
+        </button>
       </form>
+      
+      <div class="mt-6 pt-4 border-t border-zinc-700">
+        <div class="flex items-center justify-center space-x-4">
+          <button disabled class="flex items-center justify-center px-4 py-2 border border-zinc-600 rounded-lg hover:bg-zinc-700 transition-colors text-sm w-full cursor-not-allowed">
+            <i class="fab fa-google mr-2 text-zinc-300"></i>
+            Sign in with Google
+          </button>
+          <button disabled class="flex items-center justify-center px-4 py-2 border border-zinc-600 rounded-lg hover:bg-zinc-700 transition-colors text-sm w-full cursor-not-allowed">
+            <i class="fab fa-github mr-2 text-zinc-300"></i>
+            Sign in with GitHub
+          </button>
+        </div>
+      </div>
+      
+      <div class="mt-6 text-center text-xs text-zinc-400">
+        <p>Don't have an account? <a href="/" class="text-blue-400 hover:underline">Sign up</a></p>
+      </div>
     </div>
   </body>
 </html>

@@ -13,6 +13,6 @@ body {
 }
 
 
-form  input:not(:first-child), button {
+form  input:not(:first-child) {
     margin-left: 8px; /* or whatever margin you want */
   }
