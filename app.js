@@ -21,10 +21,32 @@ server.get("/signin", (req, res) => {
   res.render("signin");
 });
 
-server.get("/dashboard", isLoggedIn, async (req, res) => {
+server.get("/profile", isLoggedIn, async (req, res) => {
   const { email, userId } = req.user;
+  const user = await userModel.findOne({ _id: userId }).populate("posts");
+
+  //Can do this 👇🏻 by using populate() method 👆🏻
+  //   const posts = await Promise.all(
+  //     user.posts.map((postId) => {
+  //       const post = postModel.findOne({ _id: postId });
+  //       return post;
+  //     })
+  //   );
+
+  res.render("profile", { user });
+});
+
+server.post("/post", isLoggedIn, async (req, res) => {
+  const { email, userId } = req.user;
+  const { content } = req.body;
   const user = await userModel.findOne({ _id: userId });
-  res.render("dashboard", { user: user });
+  const post = await postModel.create({
+    user: user._id,
+    content,
+  });
+
+  await user.updateOne({ $push: { posts: post } });
+  res.redirect("/profile");
 });
 
 server.post("/signin", async (req, res) => {
@@ -38,7 +60,7 @@ server.post("/signin", async (req, res) => {
 
   const token = jwt.sign({ email, userId: user._id }, "secretKey");
   res.cookie("token", token);
-  res.redirect("/dashboard");
+  res.redirect("/profile");
   //   res.status(200).send("you can login");
 });
 
@@ -66,13 +88,13 @@ server.post("/signup", async (req, res) => {
 });
 
 server.get("/logout", (req, res) => {
-  res.cookie("token", null);
+  res.cookie("token", "");
   res.redirect("/signin");
 });
 
 //middleware function:
 function isLoggedIn(req, res, next) {
-  if (!req.cookies.token) res.send("You must be logged in");
+  if (!req.cookies.token) res.redirect("/signin");
   else {
     const data = jwt.verify(req.cookies.token, "secretKey");
     req.user = data;
