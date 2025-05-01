@@ -24,7 +24,6 @@ server.get("/signin", (req, res) => {
 server.get("/profile", isLoggedIn, async (req, res) => {
   const { email, userId } = req.user;
   const user = await userModel.findOne({ _id: userId }).populate("posts");
-
   //Can do this 👇🏻 by using populate() method 👆🏻
   //   const posts = await Promise.all(
   //     user.posts.map((postId) => {
@@ -32,8 +31,55 @@ server.get("/profile", isLoggedIn, async (req, res) => {
   //       return post;
   //     })
   //   );
-
   res.render("profile", { user });
+});
+
+server.get("/like/:postid", isLoggedIn, async (req, res) => {
+  try {
+    // Find the post by ID
+    const post = await postModel.findOne({ _id: req.params.postid });
+    if (!post) {
+      // If AJAX request, return JSON response
+      if (req.xhr) {
+        return res.json({ success: false, message: "Post not found" });
+      }
+      return res.redirect("/profile");
+    }
+    const userLikedIndex = post.likes.indexOf(req.user.userId);
+    let liked = false;
+
+    if (userLikedIndex === -1) {
+      post.likes.push(req.user.userId);
+      liked = true;
+    } else {
+      post.likes.splice(userLikedIndex, 1);
+      liked = false;
+    }
+    await post.save();
+
+    if (req.xhr) {
+      return res.json({
+        success: true,
+        liked: liked,
+        likeCount: post.likes.length,
+      });
+    }
+    res.redirect("/profile");
+  } catch (error) {
+    console.error("Error in like route:", error);
+    if (req.xhr) {
+      return res.status(500).json({ success: false, message: "Server error" });
+    }
+    res.redirect("/profile");
+  }
+});
+
+server.post("/edit/:postId", isLoggedIn, async (req, res) => {
+  const { postId } = req.params;
+  const post = await postModel
+    .findOneAndUpdate({ _id: postId }, { content: req.body.content })
+    .populate("user");
+  res.redirect("/profile");
 });
 
 server.post("/post", isLoggedIn, async (req, res) => {
