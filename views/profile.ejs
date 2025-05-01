@@ -11,49 +11,6 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <script>
-      function expandTextarea() {
-        const textarea = document.getElementById("post-content");
-        textarea.style.height = "auto";
-        textarea.style.height = textarea.scrollHeight + "px";
-      }
-
-      function toggleLike(btn) {
-        const icon = btn.querySelector("i");
-        const count = btn.querySelector("span");
-        let likes = parseInt(count.textContent);
-
-        const isLiked = icon.classList.contains("fas");
-
-        // Toggle icon style: outline vs solid
-        icon.classList.toggle("far", isLiked); // outline
-        icon.classList.toggle("fas", !isLiked); // solid
-
-        // Toggle color
-        btn.classList.toggle("text-blue-500", isLiked);
-        btn.classList.toggle("text-red-500", !isLiked);
-
-        // Update like count
-        count.textContent = isLiked ? likes - 1 : likes + 1;
-      }
-
-      function showEditForm(postId) {
-        document
-          .getElementById("edit-form-" + postId)
-          .classList.toggle("hidden");
-        document
-          .getElementById("post-content-" + postId)
-          .classList.toggle("hidden");
-        document
-          .getElementById("post-actions-" + postId)
-          .classList.toggle("hidden");
-      }
-
-      document.addEventListener("DOMContentLoaded", function () {
-        const textarea = document.getElementById("post-content");
-        textarea.addEventListener("input", expandTextarea);
-      });
-    </script>
     <style>
       .animate-in {
         animation: fadeIn 0.3s ease-in-out;
@@ -87,6 +44,30 @@
 
       ::-webkit-scrollbar-thumb:hover {
         background: #52525b;
+      }
+      
+      /* Like button animation */
+      .like-button-animate {
+        animation: likeAnimation 0.5s ease;
+      }
+      
+      @keyframes likeAnimation {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.3); }
+        100% { transform: scale(1); }
+      }
+      
+      /* Heart icon animation */
+      .like-button-animate i {
+        animation: heartBeat 0.5s ease;
+      }
+      
+      @keyframes heartBeat {
+        0% { transform: scale(1); }
+        25% { transform: scale(1.4); }
+        50% { transform: scale(1); }
+        75% { transform: scale(1.2); }
+        100% { transform: scale(1); }
       }
     </style>
   </head>
@@ -307,24 +288,27 @@
 
                       <!-- Edit form (hidden by default) -->
                       <div id="edit-form-<%= post._id %>" class="mt-2 hidden">
-                        <textarea
-                          class="w-full p-2 bg-zinc-700 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-<%= post.content %></textarea
-                        >
-                        <div class="flex justify-end space-x-2 mt-2">
-                          <button
-                            onclick="showEditForm('<%= post._id %>')"
-                            class="px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded-md text-xs"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            class="px-3 py-1 bg-blue-500 hover:bg-blue-600 rounded-md text-xs"
-                          >
-                            Save
-                          </button>
-                        </div>
+                        <form action="/edit/<%= post._id%>" method="post">
+                          <textarea
+                            name="content"
+                            class="w-full p-2 bg-zinc-700 rounded-lg text-sm outline-none focus:ring-1 focus:ring-blue-500"
+                          ><%= post.content %></textarea>
+                          <div class="flex justify-end space-x-2 mt-2">
+                            <button
+                              type="button"
+                              onclick="showEditForm('<%= post._id %>')"
+                              class="px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded-md text-xs"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              class="px-3 py-1 bg-blue-500 hover:bg-blue-600 rounded-md text-xs"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </form>
                       </div>
                     </div>
                   </div>
@@ -334,13 +318,14 @@
                   id="post-actions-<%= post._id %>"
                   class="flex items-center justify-between mt-4 pt-3 border-t border-zinc-700"
                 >
-                  <button
-                    onclick="toggleLike(this)"
-                    class="flex items-center space-x-1 text-blue-500 hover:text-red-500 transition-colors"
+                  <a
+                    href="/like/<%= post._id%>"
+                    class="like-button flex items-center space-x-1 text-zinc-400 hover:text-zinc-300 transition-colors"
+                    data-post-id="<%= post._id %>"
                   >
-                    <i class="far fa-heart"></i>
-                    <span>0</span>
-                  </button>
+                    <i class="<%= post.likes.indexOf(user._id)===-1? 'far' : 'fas' %> fa-heart "></i>
+                    <span class=""><%= post.likes.length %></span>
+                  </a>
 
                   <button
                     class="flex items-center space-x-1 text-zinc-400 hover:text-zinc-300 transition-colors"
