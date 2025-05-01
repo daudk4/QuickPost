@@ -23,24 +23,31 @@ server.get("/signin", (req, res) => {
 
 server.get("/profile", isLoggedIn, async (req, res) => {
   const { email, userId } = req.user;
-  const user = await userModel.findOne({ _id: userId });
-  res.render("profile", { user: user });
+  const user = await userModel.findOne({ _id: userId }).populate("posts");
+
+  //Can do this 👇🏻 by using populate() method 👆🏻
+  //   const posts = await Promise.all(
+  //     user.posts.map((postId) => {
+  //       const post = postModel.findOne({ _id: postId });
+  //       return post;
+  //     })
+  //   );
+
+  res.render("profile", { user });
 });
 
-server.get("/post", isLoggedIn, async (req, res) => {
+server.post("/post", isLoggedIn, async (req, res) => {
   const { email, userId } = req.user;
-  const { content } = req.body
+  const { content } = req.body;
   const user = await userModel.findOne({ _id: userId });
   const post = await postModel.create({
     user: user._id,
     content,
-  })
+  });
 
-  await user.updateOne({_id: user._id})
-
-
+  await user.updateOne({ $push: { posts: post } });
+  res.redirect("/profile");
 });
-
 
 server.post("/signin", async (req, res) => {
   const { email, password } = req.body;
@@ -81,7 +88,7 @@ server.post("/signup", async (req, res) => {
 });
 
 server.get("/logout", (req, res) => {
-  res.cookie("token", null);
+  res.cookie("token", "");
   res.redirect("/signin");
 });
 
