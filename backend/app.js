@@ -6,20 +6,20 @@ const cookieParser = require("cookie-parser");
 const { userModel, postModel } = require("./models");
 
 const server = express();
-server.set("view engine", "ejs");
+// server.set("view engine", "ejs");
 
 server.use(cookieParser());
 server.use(express.json());
 server.use(express.urlencoded());
 server.use(express.static(path.join(__dirname, "public")));
 
-server.get("/", (req, res) => {
-  res.render("signup");
-});
+// server.get("/", (req, res) => {
+//   res.render("signup");
+// });
 
-server.get("/signin", (req, res) => {
-  res.render("signin");
-});
+// server.get("/signin", (req, res) => {
+//   res.render("signin");
+// });
 
 server.get("/profile", isLoggedIn, async (req, res) => {
   const { email, userId } = req.user;
